@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>营养风险评估计算器</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: "Microsoft YaHei", sans-serif; 
+            padding: 15px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 { 
+            color: #2c80b9; 
+            text-align: center; 
+            margin-bottom: 20px;
+        }
+        .section { 
+            margin-bottom: 25px; 
+            padding: 15px; 
+            background: #f8f9fa; 
+            border-radius: 8px;
+        }
+        .section-title { 
+            color: #2c80b9; 
+            margin-bottom: 10px; 
+            font-weight: bold;
+        }
+        input, select { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+        }
+        button { 
+            background: #2c80b9; 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            width: 100%; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        button:hover { background: #1e6ea1; }
+        .result { 
+            background: #e8f4fc; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            border-left: 4px solid #2c80b9;
+        }
+        .score-display { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #d9534f; 
+            text-align: center;
+            margin: 10px 0;
+        }
+        .tips { 
+            background: #fff3cd; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin: 10px 0; 
+            border: 1px solid #ffeaa7;
+        }
+        .input-group { 
+            display: flex; 
+            gap: 10px; 
+            margin: 10px 0;
+        }
+        .input-group input { flex: 1; }
+        .percent { color: #d9534f; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📱 营养风险快速评估计算器</h2>
+        
+        <!-- 患者信息 -->
+        <div class="section">
+            <div class="section-title">患者信息</div>
+            <input type="text" id="patientName" placeholder="患者姓名">
+            <input type="text" id="patientID" placeholder="病历号">
+        </div>
+        
+        <!-- 体重变化 -->
+        <div class="section">
+            <div class="section-title">1. 体重变化（kg）</div>
+            <div class="input-group">
+                <input type="number" id="currentWeight" placeholder="当前体重" step="0.1">
+                <input type="number" id="height" placeholder="身高（cm）" step="0.1">
+            </div>
+            <div>历史体重（若不知道可留空）</div>
+            <input type="number" id="weight1m" placeholder="1个月前体重" step="0.1">
+            <input type="number" id="weight2m" placeholder="2个月前体重" step="0.1">
+            <input type="number" id="weight3m" placeholder="3个月前体重" step="0.1">
+            <div id="weightLossDisplay" class="tips"></div>
+        </div>
+        
+        <!-- 进食情况 -->
+        <div class="section">
+            <div class="section-title">2. 进食情况</div>
+            <select id="foodIntake">
+                <option value="100">正常吃饭（75-100%）</option>
+                <option value="65">吃得少一些（50-75%）</option>
+                <option value="37.5">吃得很少（25-50%）</option>
+                <option value="12.5">几乎没吃（0-25%）</option>
+            </select>
+        </div>
+        
+        <!-- 身体状况 -->
+        <div class="section">
+            <div class="section-title">3. 身体状况</div>
+            <select id="physicalState">
+                <option value="0">精神、力气正常</option>
+                <option value="1">有点乏力，食欲一般</option>
+                <option value="2">明显消瘦，没精神没力气</option>
+            </select>
+        </div>
+        
+        <!-- 疾病类型 -->
+        <div class="section">
+            <div class="section-title">4. 疾病类型（单选）</div>
+            <select id="diseaseType">
+                <option value="0">无特殊疾病/营养需求正常</option>
+                <option value="1">慢性病（糖尿病、COPD、恶性肿瘤等）</option>
+                <option value="2">大手术、卒中、重症肺炎、血液肿瘤</option>
+                <option value="3">头部损伤、骨髓移植、ICU患者</option>
+            </select>
+        </div>
+        
+        <!-- 年龄 -->
+        <div class="section">
+            <div class="section-title">5. 年龄</div>
+            <input type="number" id="age" placeholder="输入年龄" min="0" max="120">
+        </div>
+        
+        <!-- 计算按钮 -->
+        <button onclick="calculateScore()">🚀 开始评估计算</button>
+        
+        <!-- 结果显示 -->
+        <div id="resultSection" class="result" style="display:none;">
+            <div class="section-title">评估结果</div>
+            <div id="patientInfo"></div>
+            
+            <div class="score-display" id="totalScore">总分：0</div>
+            
+            <div id="scoreBreakdown"></div>
+            
+            <div id="recommendation"></div>
+            
+            <div id="riskLevel"></div>
+            
+            <div class="tips" style="margin-top:15px;">
+                <strong>操作建议：</strong><br>
+                1. 可截图保存结果<br>
+                2. 高风险患者请通知营养科<br>
+                3. 记录在评估单中
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin-top:20px; color:#666; font-size:12px;">
+            仁济医院营养科推荐使用 | 自动计算版本 1.0
+        </div>
+    </div>
+
+    <script>
+        // 实时计算体重变化
+        function updateWeightLoss() {
+            const current = parseFloat(document.getElementById('currentWeight').value) || 0;
+            const weight3m = parseFloat(document.getElementById('weight3m').value) || 0;
+            
+            if (current && weight3m && weight3m > current) {
+                const lossPercent = ((weight3m - current) / weight3m * 100).toFixed(1);
+                document.getElementById('weightLossDisplay').innerHTML = 
+                    `📉 近3个月体重下降：<span class="percent">${lossPercent}%</span>`;
+            } else if (current && weight3m) {
+                document.getElementById('weightLossDisplay').innerHTML = 
+                    `📈 体重稳定或增加`;
+            } else {
+                document.getElementById('weightLossDisplay').innerHTML = 
+                    `ℹ️ 输入历史体重可查看下降百分比`;
+            }
+        }
+        
+        // 绑定实时计算
+        document.getElementById('currentWeight').addEventListener('input', updateWeightLoss);
+        document.getElementById('weight3m').addEventListener('input', updateWeightLoss);
+        
+        // 主计算函数
+        function calculateScore() {
+            // 获取值
+            const currentWeight = parseFloat(document.getElementById('currentWeight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const weight1m = parseFloat(document.getElementById('weight1m').value) || 0;
+            const weight2m = parseFloat(document.getElementById('weight2m').value) || 0;
+            const weight3m = parseFloat(document.getElementById('weight3m').value) || 0;
+            const foodIntake = parseFloat(document.getElementById('foodIntake').value);
+            const physicalState = parseInt(document.getElementById('physicalState').value);
+            const diseaseType = parseInt(document.getElementById('diseaseType').value);
+            const age = parseInt(document.getElementById('age').value);
+            
+            // 1. 计算体重下降百分比
+            let loss1m = 0, loss2m = 0, loss3m = 0;
+            if (weight1m && currentWeight && weight1m > currentWeight) {
+                loss1m = ((weight1m - currentWeight) / weight1m * 100);
+            }
+            if (weight2m && currentWeight && weight2m > currentWeight) {
+                loss2m = ((weight2m - currentWeight) / weight2m * 100);
+            }
+            if (weight3m && currentWeight && weight3m > currentWeight) {
+                loss3m = ((weight3m - currentWeight) / weight3m * 100);
+            }
+            
+            // 2. 计算BMI
+            let bmi = 0;
+            if (height && currentWeight) {
+                bmi = currentWeight / ((height/100) ** 2);
+            }
+            
+            // 3. 营养状况评分
+            let nutritionScore = 0;
+            
+            // 规则1：体重下降>5%（3个月）
+            if (loss3m > 5 || (foodIntake >= 50 && foodIntake <= 75)) {
+                nutritionScore = Math.max(nutritionScore, 1);
+            }
+            
+            // 规则2：体重下降>5%（2个月）或 BMI 18.5-20.5且有症状 或 进食25-50%
+            if (loss2m > 5 || 
+                (bmi >= 18.5 && bmi <= 20.5 && physicalState >= 1) || 
+                (foodIntake >= 25 && foodIntake < 50)) {
+                nutritionScore = Math.max(nutritionScore, 2);
+            }
+            
+            // 规则3：体重下降>5%（1个月）或 >15%（3个月）或 BMI<18.5且有症状 或 进食<25%
+            if (loss1m > 5 || 
+                loss3m > 15 || 
+                (bmi > 0 && bmi < 18.5 && physicalState >= 2) || 
+                foodIntake < 25) {
+                nutritionScore = Math.max(nutritionScore, 3);
+            }
+            
+            // 4. 疾病评分（直接映射）
+            const diseaseScore = diseaseType;
+            
+            // 5. 年龄评分
+            const ageScore = age >= 70 ? 1 : 0;
+            
+            // 6. 总分
+            const totalScore = nutritionScore + diseaseScore + ageScore;
+            
+            // 7. 显示结果
+            document.getElementById('patientInfo').innerHTML = `
+                <strong>患者：</strong>${document.getElementById('patientName').value || '未填写'} &nbsp;
+                <strong>病历号：</strong>${document.getElementById('patientID').value || '未填写'}
+            `;
+            
+            document.getElementById('totalScore').innerHTML = `总分：${totalScore} 分`;
+            
+            document.getElementById('scoreBreakdown').innerHTML = `
+                <div><strong>详细得分：</strong></div>
+                <div>营养状况：${nutritionScore} 分</div>
+                <div>疾病严重程度：${diseaseScore} 分</div>
+                <div>年龄：${ageScore} 分</div>
+                ${bmi > 0 ? `<div>BMI：${bmi.toFixed(1)}</div>` : ''}
+            `;
+            
+            // 风险等级和建议
+            let riskLevel = "", recommendation = "";
+            if (totalScore >= 6) {
+                riskLevel = `<span style="color:red;font-weight:bold;">高风险</span>`;
+                recommendation = "🔴 立即启动营养治疗计划，必须通知营养科会诊";
+            } else if (totalScore >= 4) {
+                riskLevel = `<span style="color:orange;font-weight:bold;">中风险</span>`;
+                recommendation = "🟡 建议营养科评估，考虑营养支持措施";
+            } else if (totalScore >= 3) {
+                riskLevel = `<span style="color:#f0ad4e;font-weight:bold;">低风险</span>`;
+                recommendation = "🟢 存在营养风险，建议监测营养状况";
+            } else {
+                riskLevel = `<span style="color:green;font-weight:bold;">极低风险</span>`;
+                recommendation = "✅ 营养风险较低，常规监测即可";
+            }
+            
+            document.getElementById('riskLevel').innerHTML = `<strong>风险等级：</strong>${riskLevel}`;
+            document.getElementById('recommendation').innerHTML = `<strong>处理建议：</strong>${recommendation}`;
+            
+            // 显示结果区域
+            document.getElementById('resultSection').style.display = 'block';
+            
+            // 滚动到结果
+            document.getElementById('resultSection').scrollIntoView({behavior: 'smooth'});
+        }
+    </script>
+</body>
+</html>
