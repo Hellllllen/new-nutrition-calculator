@@ -172,7 +172,7 @@
         </div>
         
         <div style="text-align:center; margin-top:20px; color:#666; font-size:12px;">
-            营养风险筛查 | 自动计算版本 1.0
+            仁济医院营养科推荐使用 | 自动计算版本 1.0
         </div>
     </div>
 
@@ -282,13 +282,13 @@
             let riskLevel = "", recommendation = "";
             if (totalScore >= 6) {
                 riskLevel = `<span style="color:red;font-weight:bold;">高风险</span>`;
-                recommendation = "🔴 存在营养风险，继续监测营养状况，建议营养科评估，考虑营养支持措施";
+                recommendation = "🔴 立即启动营养治疗计划，必须通知营养科会诊";
             } else if (totalScore >= 4) {
                 riskLevel = `<span style="color:orange;font-weight:bold;">高风险</span>`;
-                recommendation = "🔴 存在营养风险，继续监测营养状况，建议营养科评估，考虑营养支持措施";
+                recommendation = "🟡 建议营养科评估，考虑营养支持措施";
             } else if (totalScore >= 3) {
                 riskLevel = `<span style="color:#f0ad4e;font-weight:bold;">高风险</span>`;
-                recommendation = "🔴 存在营养风险，继续监测营养状况，建议营养科评估，考虑营养支持措施";
+                recommendation = "🟢 存在营养风险，建议监测营养状况";
             } else {
                 riskLevel = `<span style="color:green;font-weight:bold;">低风险</span>`;
                 recommendation = "✅ 营养风险较低，常规监测即可";
